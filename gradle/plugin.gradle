@@ -134,6 +134,14 @@ class CargoKitPlugin implements Plugin<Project> {
                     throw new GradleException("Please set 'android.ndkVersion' in 'app/build.gradle'.")
                 }
 
+                try {
+                    plugin.project.android.ndkDirectory
+                } catch (Exception e) {
+                    throw new GradleException(
+                      "NDK is not installed. Required NDK version: ${plugin.project.android.ndkVersion}"
+                    )
+                }
+
                 def task = project.tasks.create(taskName, CargoKitBuildTask.class) {
                     buildMode = variant.name
                     buildDir = cargoBuildDir
