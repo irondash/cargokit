@@ -16,10 +16,10 @@ Example plugin available at [hello_rust_ffi_plugin](https://github.com/irondash/
 
 ## Characteristic
 
-| Target      | Toolchains | Type              | Suffix | armv7 | arm64 | x86 | x86_64 |
-| ----------- | ---------- | ----------------- | ------ | ----- | ----- | --- | ------ |
-| **Android** | Gradle     | C Dynamic Library | .so    | ✅    | ✅    | ✅  | ✅     |
-| **iOS**     | Cocoapods  | Static Library    | .a     | ✅    | ✅    | -   | ✅     |
-| **macOS**   | Cocoapods  | Static Library    | .a     | ✅    | ✅    | -   | ✅     |
-| **Linux**   | cmake      | C Dynamic Library | .so    | ✅    | ✅    | ✅  | ✅     |
-| **Windows** | cmake      | C Dynamic Library | .dll   | -     | -     | ✅  | ✅     |
+| Target      | Toolchains | Type              | Suffix | armv7        | arm64 | x86          | x86_64 |
+| ----------- | ---------- | ----------------- | ------ | ------------ | ----- | ------------ | ------ |
+| **Android** | Gradle     | C Dynamic Library | .so    | ✅           | ✅    | ✅           | ✅     |
+| **iOS**     | Cocoapods  | Static Library    | .a     | ✅           | ✅    | -            | ✅     |
+| **macOS**   | Cocoapods  | Static Library    | .a     | ✅           | ✅    | -            | ✅     |
+| **Linux**   | cmake      | C Dynamic Library | .so    | ✅(Untested) | ✅    | ✅(Untested) | ✅     |
+| **Windows** | cmake      | C Dynamic Library | .dll   | -            | -     | ✅(Untested) | ✅     |
