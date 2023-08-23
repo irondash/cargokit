@@ -7,24 +7,33 @@ use log::info;
 
 enum Target {
     WindowsX64,
+    WindowsX86,
     LinuxX64,
+    LinuxX86,
     LinuxArm64,
+    LinuxArmV7,
 }
 
 impl Target {
     fn rust_target(&self) -> &'static str {
         match self {
             Target::WindowsX64 => "x86_64-pc-windows-msvc",
+            Target::WindowsX86 => "i686-pc-windows-msvc",
             Target::LinuxX64 => "x86_64-unknown-linux-gnu",
+            Target::LinuxX86 => "i686-unknown-linux-gnu",
             Target::LinuxArm64 => "aarch64-unknown-linux-gnu",
+            Target::LinuxArmV7 => "armv7-unknown-linux-gnueabihf",
         }
     }
 
     fn from_flutter_target(s: &str) -> Option<Target> {
         match s {
             "windows-x64" => Some(Target::WindowsX64),
+            "windows-x86" => Some(Target::WindowsX86),
             "linux-x64" => Some(Target::LinuxX64),
+            "linux-x86" => Some(Target::LinuxX86),
             "linux-arm64" => Some(Target::LinuxArm64),
+            "linux-armv7" => Some(Target::LinuxArmV7),
             _ => None,
         }
     }
