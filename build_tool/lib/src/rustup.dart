@@ -1,5 +1,6 @@
 import 'dart:io';
 
+import 'package:collection/collection.dart';
 import 'package:path/path.dart' as path;
 
 import 'util.dart';
@@ -15,11 +16,10 @@ class _Toolchain {
 }
 
 class Rustup {
-  List<String> get installedToolchains =>
-      _installedToolchains.map((e) => e.name).toList(growable: false);
-
-  List<String> installedTargets(String toolchain) =>
-      List.unmodifiable(_installedTargets(toolchain));
+  List<String>? installedTargets(String toolchain) {
+    final targets = _installedTargets(toolchain);
+    return targets != null ? List.unmodifiable(targets) : null;
+  }
 
   void installToolchain(String toolchain) {
     log.info("Installing Rust toolchain: $toolchain");
@@ -40,28 +40,38 @@ class Rustup {
       toolchain,
       target,
     ]);
-    _installedTargets(toolchain).add(target);
+    _installedTargets(toolchain)?.add(target);
   }
 
   final List<_Toolchain> _installedToolchains;
 
   Rustup() : _installedToolchains = _getInstalledToolchains();
 
-  List<String> _installedTargets(String toolchain) =>
-      _installedToolchains.firstWhere((e) => e.name == toolchain).targets;
+  List<String>? _installedTargets(String toolchain) => _installedToolchains
+      .firstWhereOrNull(
+          (e) => e.name == toolchain || e.name.startsWith('$toolchain-'))
+      ?.targets;
 
   static List<_Toolchain> _getInstalledToolchains() {
+    String extractToolchainName(String line) {
+      // ignore (default) after toolchain name
+      final parts = line.split(' ');
+      return parts[0];
+    }
+
     final res = runCommand("rustup", ['toolchain', 'list']);
     final lines = res.stdout
         .toString()
         .split('\n')
         .where((e) => e.isNotEmpty)
+        .map(extractToolchainName)
         .toList(growable: true);
+
     return lines
         .map(
-          (toolchain) => _Toolchain(
-            toolchain,
-            _getInstalledTargets(toolchain),
+          (name) => _Toolchain(
+            name,
+            _getInstalledTargets(name),
           ),
         )
         .toList(growable: true);
