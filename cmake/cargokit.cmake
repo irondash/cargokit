@@ -60,7 +60,11 @@ function(apply_cargokit target manifest_dir lib_name any_symbol_name)
                 "${CMAKE_CURRENT_BINARY_DIR}/${CONFIG}/${CARGOKIT_LIB_FULL_NAME}"
                 "${CMAKE_CURRENT_BINARY_DIR}/_phony_"
                 COMMAND ${CMAKE_COMMAND} -E env ${CARGOKIT_ENV}
-                "${cargokit_cmake_root}/run_build_tool${SCRIPT_EXTENSION}" build-cmake
+                if(WIN32)
+                    "${cargokit_cmake_root}/run_build_tool${SCRIPT_EXTENSION}" build-cmake
+                else()
+                    sh "${cargokit_cmake_root}/run_build_tool${SCRIPT_EXTENSION}" build-cmake
+                endif()
                 VERBATIM
             )
         endforeach()
@@ -70,10 +74,15 @@ function(apply_cargokit target manifest_dir lib_name any_symbol_name)
             ${OUTPUT_LIB}
             "${CMAKE_CURRENT_BINARY_DIR}/_phony_"
             COMMAND ${CMAKE_COMMAND} -E env ${CARGOKIT_ENV}
-            "${cargokit_cmake_root}/run_build_tool${SCRIPT_EXTENSION}" build-cmake
+            if(WIN32)
+                "${cargokit_cmake_root}/run_build_tool${SCRIPT_EXTENSION}" build-cmake
+            else()
+                sh "${cargokit_cmake_root}/run_build_tool${SCRIPT_EXTENSION}" build-cmake
+            endif()
             VERBATIM
         )
     endif()
+
 
     set_source_files_properties("${CMAKE_CURRENT_BINARY_DIR}/_phony_" PROPERTIES SYMBOLIC TRUE)
 
