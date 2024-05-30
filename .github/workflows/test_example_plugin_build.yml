@@ -78,5 +78,7 @@ jobs:
         working-directory: ${{ env.EXAMPLE_DIR }}
         run: |
           export JAVA_HOME=$JAVA_HOME_11_X64
+          mkdir -p ~/.gradle
+          echo "org.gradle.java.home=$JAVA_HOME_11_X64" > ~/.gradle/gradle.properties
           flutter build apk --${{ matrix.build_mode }} -v
 
