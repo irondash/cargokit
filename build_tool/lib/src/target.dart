@@ -44,6 +44,10 @@ class Target {
       flutter: 'windows-x64',
     ),
     Target(
+      rust: 'aarch64-pc-windows-msvc',
+      flutter: 'windows-arm64',
+    ),
+    Target(
       rust: 'x86_64-unknown-linux-gnu',
       flutter: 'linux-x64',
     ),
@@ -113,10 +117,15 @@ class Target {
         return [Target.forRustTriple('x86_64-unknown-linux-gnu')!];
       }
     }
+    if (Platform.isWindows) {
+      final arch = runCommand('echo', ['%PROCESSOR_ARCHITECTURE%']).stdout as String;
+      if (arch.trim().toLowerCase() == 'arm64') {
+        return [Target.forRustTriple('aarch64-pc-windows-msvc')!];
+      }
+      return [Target.forRustTriple('x86_64-pc-windows-msvc')!];
+    }
     return all.where((target) {
-      if (Platform.isWindows) {
-        return target.rust.contains('-windows-');
-      } else if (Platform.isMacOS) {
+      if (Platform.isMacOS) {
         return target.darwinPlatform != null;
       }
       return false;
