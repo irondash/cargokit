@@ -75,10 +75,9 @@ class AndroidEnvironment {
   }
 
   Future<Map<String, String>> buildEnvironment() async {
-    final hostArch =
-        Platform.isMacOS
-            ? "darwin-x86_64"
-            : (Platform.isLinux ? "linux-x86_64" : "windows-x86_64");
+    final hostArch = Platform.isMacOS
+        ? "darwin-x86_64"
+        : (Platform.isLinux ? "linux-x86_64" : "windows-x86_64");
 
     final ndkPath = path.join(sdkPath, 'ndk', ndkVersion);
     final toolchainPath = path.join(
@@ -130,10 +129,10 @@ class AndroidEnvironment {
     final runRustTool =
         Platform.isWindows ? 'run_build_tool.cmd' : 'run_build_tool.sh';
 
-    final packagePath =
-        (await Isolate.resolvePackageUri(
-          Uri.parse('package:build_tool/buildtool.dart'),
-        ))!.toFilePath();
+    final packagePath = (await Isolate.resolvePackageUri(
+      Uri.parse('package:build_tool/buildtool.dart'),
+    ))!
+        .toFilePath();
     final selfPath = path.canonicalize(
       path.join(packagePath, '..', '..', '..', runRustTool),
     );
