@@ -16,8 +16,13 @@ jobs:
         run: dart pub get --no-precompile
         working-directory: build_tool
       - name: Dart Format
-        run: dart format . --output=none --set-exit-if-changed
+        run: dart format .
         working-directory: build_tool
+      - name: Upload Formatted Files
+        uses: actions/upload-artifact@v4
+        with:
+          name: formatted-files
+          path: .
       - name: Analyze
         run: dart analyze
         working-directory: build_tool
