@@ -79,7 +79,7 @@ class Target {
     required String darwinAarch,
   }) {
     return all.firstWhereOrNull(
-      (element) => //
+      (element) =>
           element.darwinPlatform == platformName &&
           element.darwinArch == darwinAarch,
     );
