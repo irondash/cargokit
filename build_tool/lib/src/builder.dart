@@ -18,10 +18,10 @@ extension on BuildConfiguration {
   bool get isDebug => this == BuildConfiguration.debug;
 
   String get rustName => switch (this) {
-    BuildConfiguration.debug => 'debug',
-    BuildConfiguration.release => 'release',
-    BuildConfiguration.profile => 'release',
-  };
+        BuildConfiguration.debug => 'debug',
+        BuildConfiguration.release => 'release',
+        BuildConfiguration.profile => 'release',
+      };
 }
 
 class BuildException implements Exception {
@@ -131,25 +131,28 @@ class RustBuilder {
   Future<String> build() async {
     final extraArgs = _buildOptions?.flags ?? [];
     final manifestPath = path.join(environment.manifestDir, 'Cargo.toml');
-    runCommand('rustup', [
-      'run',
-      _toolchain,
-      'cargo',
-      environment.glibcVersion != null ? 'zigbuild' : 'build',
-      ...extraArgs,
-      '--manifest-path',
-      manifestPath,
-      '-p',
-      environment.crateInfo.packageName,
-      if (!environment.configuration.isDebug) '--release',
-      '--target',
-      target.rust +
-          (environment.glibcVersion != null
-              ? '.${environment.glibcVersion!}'
-              : ""),
-      '--target-dir',
-      environment.targetTempDir,
-    ], environment: await _buildEnvironment());
+    runCommand(
+        'rustup',
+        [
+          'run',
+          _toolchain,
+          'cargo',
+          environment.glibcVersion != null ? 'zigbuild' : 'build',
+          ...extraArgs,
+          '--manifest-path',
+          manifestPath,
+          '-p',
+          environment.crateInfo.packageName,
+          if (!environment.configuration.isDebug) '--release',
+          '--target',
+          target.rust +
+              (environment.glibcVersion != null
+                  ? '.${environment.glibcVersion!}'
+                  : ""),
+          '--target-dir',
+          environment.targetTempDir,
+        ],
+        environment: await _buildEnvironment());
     return path.join(
       environment.targetTempDir,
       target.rust,

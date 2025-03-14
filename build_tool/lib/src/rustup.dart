@@ -55,12 +55,11 @@ class Rustup {
 
   Rustup() : _installedToolchains = _getInstalledToolchains();
 
-  List<String>? _installedTargets(String toolchain) =>
-      _installedToolchains
-          .firstWhereOrNull(
-            (e) => e.name == toolchain || e.name.startsWith('$toolchain-'),
-          )
-          ?.targets;
+  List<String>? _installedTargets(String toolchain) => _installedToolchains
+      .firstWhereOrNull(
+        (e) => e.name == toolchain || e.name.startsWith('$toolchain-'),
+      )
+      ?.targets;
 
   static List<_Toolchain> _getInstalledToolchains() {
     String extractToolchainName(String line) {
@@ -122,10 +121,9 @@ class Rustup {
   static String? executablePath() {
     final envPath = Platform.environment['PATH'];
     final envPathSeparator = Platform.isWindows ? ';' : ':';
-    final home =
-        Platform.isWindows
-            ? Platform.environment['USERPROFILE']
-            : Platform.environment['HOME'];
+    final home = Platform.isWindows
+        ? Platform.environment['USERPROFILE']
+        : Platform.environment['HOME'];
     final paths = [
       if (home != null) path.join(home, '.cargo', 'bin'),
       if (envPath != null) ...envPath.split(envPathSeparator),

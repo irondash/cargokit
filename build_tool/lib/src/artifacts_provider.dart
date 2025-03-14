@@ -75,16 +75,15 @@ class ArtifactProvider {
           remote: false,
         ),
       };
-      final artifacts =
-          artifactNames
-              .map(
-                (artifactName) => Artifact(
-                  path: path.join(targetDir, artifactName),
-                  finalFileName: artifactName,
-                ),
-              )
-              .where((element) => File(element.path).existsSync())
-              .toList();
+      final artifacts = artifactNames
+          .map(
+            (artifactName) => Artifact(
+              path: path.join(targetDir, artifactName),
+              finalFileName: artifactName,
+            ),
+          )
+          .where((element) => File(element.path).existsSync())
+          .toList();
       result[target] = artifacts;
     }
     return result;

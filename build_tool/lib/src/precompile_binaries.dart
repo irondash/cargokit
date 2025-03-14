@@ -75,10 +75,9 @@ class PrecompileBinaries {
       hash: hash,
     );
 
-    final tempDir =
-        this.tempDir != null
-            ? Directory(this.tempDir!)
-            : Directory.systemTemp.createTempSync('precompiled_');
+    final tempDir = this.tempDir != null
+        ? Directory(this.tempDir!)
+        : Directory.systemTemp.createTempSync('precompiled_');
 
     tempDir.createSync(recursive: true);
 
@@ -195,8 +194,7 @@ class PrecompileBinaries {
           targetCommitish: null,
           isDraft: false,
           isPrerelease: false,
-          body:
-              'Precompiled binaries for crate $packageName, '
+          body: 'Precompiled binaries for crate $packageName, '
               'crate hash $hash.',
         ),
       );
