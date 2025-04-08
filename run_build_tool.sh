@@ -11,6 +11,9 @@ cd "$CARGOKIT_TOOL_TEMP_DIR"
 # Write a very simple bin package in temp folder that depends on build_tool package
 # from Cargokit. This is done to ensure that we don't pollute Cargokit folder
 # with .dart_tool contents.
+cat << EOF > "directory.txt"
+$BASEDIR
+EOF
 
 BUILD_TOOL_PKG_DIR="$BASEDIR/build_tool"
 
@@ -75,11 +78,6 @@ if [ ! -f "$PACKAGE_HASH_FILE" ]; then
     "$DART" pub get --no-precompile
     "$DART" compile kernel bin/build_tool_runner.dart
     echo "$PACKAGE_HASH" > "$PACKAGE_HASH_FILE"
-fi
-
-# Rebuild the tool if it was deleted by Android Studio
-if [ ! -f "bin/build_tool_runner.dill" ]; then
-  "$DART" compile kernel bin/build_tool_runner.dart
 fi
 
 set +e

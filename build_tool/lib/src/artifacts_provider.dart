@@ -51,7 +51,9 @@ class ArtifactProvider {
   final CargokitUserOptions userOptions;
 
   Future<Map<Target, List<Artifact>>> getArtifacts(List<Target> targets) async {
-    final result = await _getPrecompiledArtifacts(targets);
+    final result = userOptions.useLocalPrecompiledBinaries == false
+        ? await _getLocalPrecompiledArtifacts(targets)
+        : await _getPrecompiledArtifacts(targets);
 
     final pendingTargets = List.of(targets);
     pendingTargets.removeWhere((element) => result.containsKey(element));
@@ -178,6 +180,82 @@ class ArtifactProvider {
     }
   }
 
+  Future<Map<Target, List<Artifact>>> _getLocalPrecompiledArtifacts(
+    List<Target> targets,
+  ) async {
+    if (userOptions.usePrecompiledBinaries == false) {
+      _log.info('Precompiled binaries are disabled');
+      return {};
+    }
+    if (environment.crateOptions.precompiledBinaries == null) {
+      _log.fine('Precompiled binaries not enabled for this crate');
+      return {};
+    }
+
+    final start = Stopwatch()..start();
+    final crateHash = CrateHash.compute(
+      environment.manifestDir,
+      tempStorage: environment.targetTempDir,
+    );
+    _log.fine(
+        'Computed crate hash $crateHash in ${start.elapsedMilliseconds}ms');
+
+    final downloadedArtifactsDir = path.join(
+      environment.targetTempDir,
+      'precompiled',
+      crateHash,
+    );
+    Directory(downloadedArtifactsDir).createSync(recursive: true);
+
+    final res = <Target, List<Artifact>>{};
+
+    for (final target in targets) {
+      final requiredArtifacts = getArtifactNames(
+        target: target,
+        libraryName: environment.crateInfo.packageName,
+        remote: true,
+      );
+      final artifactsForTarget = <Artifact>[];
+
+      for (final artifact in requiredArtifacts) {
+        final fileName =
+            '$target/$artifact'; // PrecompileBinaries.fileName(target, artifact);
+        final downloadedPath = path.join(downloadedArtifactsDir, fileName);
+
+        if (!File(downloadedPath).existsSync()) {
+          String filePath = "${Directory.current.path}/directory.txt";
+          File file = File(filePath);
+
+          if (file.existsSync()) {
+            String firstLine = file.readAsLinesSync().first;
+
+            await _tryLocalDownloadArtifacts(
+              fileName: fileName,
+              finalPath: downloadedPath,
+              sdkDirectory: firstLine,
+            );
+          }
+        }
+        if (File(downloadedPath).existsSync()) {
+          artifactsForTarget.add(Artifact(
+            path: downloadedPath,
+            finalFileName: artifact,
+          ));
+        } else {
+          break;
+        }
+      }
+
+      // Only provide complete set of artifacts.
+      if (artifactsForTarget.length == requiredArtifacts.length) {
+        _log.fine('Found precompiled artifacts for $target');
+        res[target] = artifactsForTarget;
+      }
+    }
+
+    return res;
+  }
+
   Future<void> _tryDownloadArtifacts({
     required String crateHash,
     required String fileName,
@@ -212,6 +290,21 @@ class ArtifactProvider {
     } else {
       _log.shout('Signature verification failed! Ignoring binary.');
     }
+  }
+
+  Future<void> _tryLocalDownloadArtifacts({
+    required String fileName,
+    required String finalPath,
+    required String sdkDirectory,
+  }) async {
+    final sdkPath = '$sdkDirectory/../binary/$fileName';
+    final binaryFile = File(sdkPath);
+    if (!binaryFile.existsSync()) {
+      throw Exception('Missing artifact: ${binaryFile.path}');
+    }
+    File destinationFile = File(finalPath);
+    destinationFile.parent.createSync(recursive: true);
+    binaryFile.copySync(finalPath);
   }
 }
 

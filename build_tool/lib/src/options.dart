@@ -237,11 +237,13 @@ class CargokitUserOptions {
   CargokitUserOptions({
     required this.usePrecompiledBinaries,
     required this.verboseLogging,
+    this.useLocalPrecompiledBinaries = true,
   });
 
   CargokitUserOptions._()
       : usePrecompiledBinaries = defaultUsePrecompiledBinaries(),
-        verboseLogging = false;
+        verboseLogging = false,
+        useLocalPrecompiledBinaries = true;
 
   static CargokitUserOptions parse(YamlNode node) {
     if (node is! YamlMap) {
@@ -303,4 +305,5 @@ class CargokitUserOptions {
 
   final bool usePrecompiledBinaries;
   final bool verboseLogging;
+  final bool useLocalPrecompiledBinaries;
 }
