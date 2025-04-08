@@ -297,7 +297,7 @@ class ArtifactProvider {
     required String finalPath,
     required String sdkDirectory,
   }) async {
-    final sdkPath = '$sdkDirectory/../binary/$fileName';
+    final sdkPath = '$sdkDirectory/binary/$fileName';
     final binaryFile = File(sdkPath);
     if (!binaryFile.existsSync()) {
       throw Exception('Missing artifact: ${binaryFile.path}');

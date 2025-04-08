@@ -97,7 +97,7 @@ class PrecompileLocalBinaries {
           throw Exception('Missing artifact: ${file.path}');
         }
 
-        String destinationPath = "../../binary/$target/$name";
+        String destinationPath = "../binary/$target/$name";
         File destinationFile = File(destinationPath);
         destinationFile.parent.createSync(recursive: true);
         file.copySync(destinationPath);
