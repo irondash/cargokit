@@ -12,14 +12,11 @@ import 'util.dart';
 
 final _log = Logger('builder');
 
-enum BuildConfiguration {
-  debug,
-  release,
-  profile,
-}
+enum BuildConfiguration { debug, release, profile }
 
 extension on BuildConfiguration {
   bool get isDebug => this == BuildConfiguration.debug;
+
   String get rustName => switch (this) {
         BuildConfiguration.debug => 'debug',
         BuildConfiguration.release => 'release',
@@ -51,6 +48,8 @@ class BuildEnvironment {
   final int? androidMinSdkVersion;
   final String? javaHome;
 
+  final String? glibcVersion;
+
   BuildEnvironment({
     required this.configuration,
     required this.crateOptions,
@@ -62,6 +61,7 @@ class BuildEnvironment {
     this.androidNdkVersion,
     this.androidMinSdkVersion,
     this.javaHome,
+    this.glibcVersion,
   });
 
   static BuildConfiguration parseBuildConfiguration(String value) {
@@ -77,15 +77,12 @@ class BuildEnvironment {
     return buildConfiguration;
   }
 
-  static BuildEnvironment fromEnvironment({
-    required bool isAndroid,
-  }) {
-    final buildConfiguration =
-        parseBuildConfiguration(Environment.configuration);
-    final manifestDir = Environment.manifestDir;
-    final crateOptions = CargokitCrateOptions.load(
-      manifestDir: manifestDir,
+  static BuildEnvironment fromEnvironment({required bool isAndroid}) {
+    final buildConfiguration = parseBuildConfiguration(
+      Environment.configuration,
     );
+    final manifestDir = Environment.manifestDir;
+    final crateOptions = CargokitCrateOptions.load(manifestDir: manifestDir);
     final crateInfo = CrateInfo.load(manifestDir);
     return BuildEnvironment(
       configuration: buildConfiguration,
@@ -107,14 +104,9 @@ class RustBuilder {
   final Target target;
   final BuildEnvironment environment;
 
-  RustBuilder({
-    required this.target,
-    required this.environment,
-  });
+  RustBuilder({required this.target, required this.environment});
 
-  void prepare(
-    Rustup rustup,
-  ) {
+  void prepare(Rustup rustup) {
     final toolchain = _toolchain;
     if (rustup.installedTargets(toolchain) == null) {
       rustup.installToolchain(toolchain);
@@ -124,6 +116,9 @@ class RustBuilder {
     }
     if (!rustup.installedTargets(toolchain)!.contains(target.rust)) {
       rustup.installTarget(target.rust, toolchain: toolchain);
+    }
+    if (environment.glibcVersion != null) {
+      rustup.installZigBuild(toolchain);
     }
   }
 
@@ -137,25 +132,27 @@ class RustBuilder {
     final extraArgs = _buildOptions?.flags ?? [];
     final manifestPath = path.join(environment.manifestDir, 'Cargo.toml');
     runCommand(
-      'rustup',
-      [
-        'run',
-        _toolchain,
-        'cargo',
-        'build',
-        ...extraArgs,
-        '--manifest-path',
-        manifestPath,
-        '-p',
-        environment.crateInfo.packageName,
-        if (!environment.configuration.isDebug) '--release',
-        '--target',
-        target.rust,
-        '--target-dir',
-        environment.targetTempDir,
-      ],
-      environment: await _buildEnvironment(),
-    );
+        'rustup',
+        [
+          'run',
+          _toolchain,
+          'cargo',
+          environment.glibcVersion != null ? 'zigbuild' : 'build',
+          ...extraArgs,
+          '--manifest-path',
+          manifestPath,
+          '-p',
+          environment.crateInfo.packageName,
+          if (!environment.configuration.isDebug) '--release',
+          '--target',
+          target.rust +
+              (environment.glibcVersion != null
+                  ? '.${environment.glibcVersion!}'
+                  : ""),
+          '--target-dir',
+          environment.targetTempDir,
+        ],
+        environment: await _buildEnvironment());
     return path.join(
       environment.targetTempDir,
       target.rust,
