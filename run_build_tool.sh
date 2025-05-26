@@ -11,6 +11,9 @@ cd "$CARGOKIT_TOOL_TEMP_DIR"
 # Write a very simple bin package in temp folder that depends on build_tool package
 # from Cargokit. This is done to ensure that we don't pollute Cargokit folder
 # with .dart_tool contents.
+cat << EOF > "directory.txt"
+$BASEDIR
+EOF
 
 BUILD_TOOL_PKG_DIR="$BASEDIR/build_tool"
 
