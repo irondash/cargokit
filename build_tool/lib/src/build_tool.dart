@@ -107,10 +107,12 @@ class PrecompileBinariesCommand extends Command {
         mandatory: true,
         help: 'Directory containing Cargo.toml',
       )
-      ..addMultiOption('target',
-          help: 'Rust target triple of artifact to build.\n'
-              'Can be specified multiple times or omitted in which case\n'
-              'all targets for current platform will be built.')
+      ..addMultiOption(
+        'target',
+        help: 'Rust target triple of artifact to build.\n'
+            'Can be specified multiple times or omitted in which case\n'
+            'all targets for current platform will be built.',
+      )
       ..addOption(
         'android-sdk-location',
         help: 'Location of Android SDK (if available)',
@@ -126,6 +128,10 @@ class PrecompileBinariesCommand extends Command {
       ..addOption(
         'temp-dir',
         help: 'Directory to store temporary build artifacts',
+      )
+      ..addOption(
+        'glibc-version',
+        help: 'GLIBC version to use for linux builds',
       )
       ..addFlag(
         "verbose",
@@ -174,7 +180,8 @@ class PrecompileBinariesCommand extends Command {
       androidMinSdkVersion = int.tryParse(androidMinSdkVersionString);
       if (androidMinSdkVersion == null) {
         throw ArgumentError(
-            'Invalid android-min-sdk-version: $androidMinSdkVersionString');
+          'Invalid android-min-sdk-version: $androidMinSdkVersionString',
+        );
       }
     }
     final targetStrigns = argResults!['target'] as List<String>;
@@ -195,6 +202,7 @@ class PrecompileBinariesCommand extends Command {
       androidNdkVersion: argResults!['android-ndk-version'] as String?,
       androidMinSdkVersion: androidMinSdkVersion,
       tempDir: argResults!['temp-dir'] as String?,
+      glibcVersion: argResults!['glibc-version'] as String?,
     );
 
     await precompileBinaries.run();
@@ -221,9 +229,7 @@ class VerifyBinariesCommand extends Command {
   @override
   Future<void> run() async {
     final manifestDir = argResults!['manifest-dir'] as String;
-    final verifyBinaries = VerifyBinaries(
-      manifestDir: manifestDir,
-    );
+    final verifyBinaries = VerifyBinaries(manifestDir: manifestDir);
     await verifyBinaries.run();
   }
 }
