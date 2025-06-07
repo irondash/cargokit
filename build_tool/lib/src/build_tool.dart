@@ -13,6 +13,7 @@ import 'build_pod.dart';
 import 'logging.dart';
 import 'options.dart';
 import 'precompile_binaries.dart';
+import 'precompile_local_binaries.dart';
 import 'target.dart';
 import 'util.dart';
 import 'verify_binaries.dart';
@@ -91,6 +92,94 @@ class GenKeyCommand extends Command {
     final public = HEX.encode(kp.publicKey.bytes);
     print("Private Key: $private");
     print("Public Key: $public");
+  }
+}
+
+class PrecompileLocalBinariesCommand extends Command {
+  PrecompileLocalBinariesCommand() {
+    argParser
+      ..addOption(
+        'manifest-dir',
+        mandatory: true,
+        help: 'Directory containing Cargo.toml',
+      )
+      ..addMultiOption(
+        'target',
+        help: 'Rust target triple of artifact to build.\n'
+            'Can be specified multiple times or omitted in which case\n'
+            'all targets for current platform will be built.',
+      )
+      ..addOption(
+        'android-sdk-location',
+        help: 'Location of Android SDK (if available)',
+      )
+      ..addOption(
+        'android-ndk-version',
+        help: 'Android NDK version (if available)',
+      )
+      ..addOption(
+        'android-min-sdk-version',
+        help: 'Android minimum rquired version (if available)',
+      )
+      ..addOption(
+        'temp-dir',
+        help: 'Directory to store temporary build artifacts',
+      )
+      ..addFlag(
+        "verbose",
+        abbr: "v",
+        defaultsTo: false,
+        help: "Enable verbose logging",
+      );
+  }
+
+  @override
+  final name = 'precompile-local-binaries';
+
+  @override
+  final description = 'Prebuild and create local binaries\n';
+
+  @override
+  Future<void> run() async {
+    final verbose = argResults!['verbose'] as bool;
+    if (verbose) {
+      enableVerboseLogging();
+    }
+
+    final manifestDir = argResults!['manifest-dir'] as String;
+    if (!Directory(manifestDir).existsSync()) {
+      throw ArgumentError('Manifest directory does not exist: $manifestDir');
+    }
+    String? androidMinSdkVersionString =
+        argResults!['android-min-sdk-version'] as String?;
+    int? androidMinSdkVersion;
+    if (androidMinSdkVersionString != null) {
+      androidMinSdkVersion = int.tryParse(androidMinSdkVersionString);
+      if (androidMinSdkVersion == null) {
+        throw ArgumentError(
+          'Invalid android-min-sdk-version: $androidMinSdkVersionString',
+        );
+      }
+    }
+    final targetStrigns = argResults!['target'] as List<String>;
+    final targets = targetStrigns.map((target) {
+      final res = Target.forRustTriple(target);
+      if (res == null) {
+        throw ArgumentError('Invalid target: $target');
+      }
+      return res;
+    }).toList(growable: false);
+
+    final precompileBinaries = PrecompileLocalBinaries(
+      manifestDir: manifestDir,
+      targets: targets,
+      androidSdkLocation: argResults!['android-sdk-location'] as String?,
+      androidNdkVersion: argResults!['android-ndk-version'] as String?,
+      androidMinSdkVersion: androidMinSdkVersion,
+      tempDir: argResults!['temp-dir'] as String?,
+    );
+
+    await precompileBinaries.run();
   }
 }
 
@@ -248,6 +337,7 @@ Future<void> runMain(List<String> args) async {
       ..addCommand(BuildCMakeCommand())
       ..addCommand(GenKeyCommand())
       ..addCommand(PrecompileBinariesCommand())
+      ..addCommand(PrecompileLocalBinariesCommand())
       ..addCommand(VerifyBinariesCommand());
 
     await runner.run(args);
